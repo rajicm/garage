@@ -1,0 +1,61 @@
+<div class="container">
+  <h2>
+    Available
+    <b style="color: rebeccapurple">{{ availableParkingSpaces }}</b> parking
+    spaces.
+  </h2>
+
+  <div class="buttonsContainer">
+    <button
+      *ngIf="!parkedUser"
+      mat-fab
+      extended
+      color="primary"
+      (click)="decreeseAvailableParking()"
+      [disabled]="this.availableParkingSpaces == 10"
+    >
+      I PARKED
+    </button>
+    <button
+      *ngIf="parkedUser"
+      mat-fab
+      extended
+      color="primary"
+      (click)="increeseAvailableParking()"
+      [disabled]="this.availableParkingSpaces == 0"
+    >
+      I LEFT
+    </button>
+  </div>
+
+  <div class="calendarContainer">
+    <h2>Reserve a parking space:</h2>
+    <mat-form-field>
+      <mat-label>Choose a date</mat-label>
+      <input
+        matInput
+        [matDatepicker]="datepicker"
+        [formControl]="reservation"
+        [min]="todaysDate"
+      />
+      <mat-hint>DD-MM-YYYY</mat-hint>
+      <mat-datepicker-toggle
+        matIconSuffix
+        [for]="datepicker"
+      ></mat-datepicker-toggle>
+      <mat-datepicker #datepicker>
+        <mat-datepicker-actions>
+          <button mat-button matDatepickerCancel>Cancel</button>
+          <button
+            mat-raised-button
+            color="primary"
+            matDatepickerApply
+            (click)="reserveParkingSpace()"
+          >
+            Reserve
+          </button>
+        </mat-datepicker-actions>
+      </mat-datepicker>
+    </mat-form-field>
+  </div>
+</div>

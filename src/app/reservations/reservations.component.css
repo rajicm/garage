@@ -1,0 +1,22 @@
+:host {
+    display: flex;
+    justify-content: center;
+  }
+
+.container{
+    display: flex;
+    justify-content: center;
+    margin-top: 25px;
+    flex-direction: column;
+  }
+
+.reservationContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+span {
+    margin-right: 15px;
+}
+

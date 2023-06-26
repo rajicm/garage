@@ -1,18 +1,29 @@
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    
   ],
   imports: [
-    BrowserModule,
-    AppRoutingModule
+
+    
+
+
+    // MatMomentDateModule,
+    // AngularFireModule.initializeApp(environment.firebase),
+    // StoreModule.forRoot({}, {}),
+    // EffectsModule.forRoot([]),
+    // AngularFireDatabaseModule,
+    // AngularFirestoreModule,
+    // AngularFireStorageModule,
+    // AngularFireAuthModule,
+    
+    // provideFirebaseApp(() => initializeApp(environment.firebase)),
+    
+    
   ],
-  providers: [],
-  bootstrap: [AppComponent]
+  providers: [   
+  ],
+  bootstrap: [],
 })
-export class AppModule { }
+export class AppModule {}

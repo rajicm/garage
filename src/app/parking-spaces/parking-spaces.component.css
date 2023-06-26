@@ -1,0 +1,28 @@
+:host {
+  display: flex;
+  justify-content: center;
+}
+
+h2 {
+  margin-top: 25px;
+}
+
+.container,
+.buttonsContainer,
+.calendarContainer {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.calendarContainer h2 {
+  margin-left: 10px;
+}
+
+button {
+  margin-bottom: 15px;
+}
+
+#noEmptySpaces {
+  margin-top: 25px;
+}

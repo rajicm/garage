@@ -1,0 +1,12 @@
+<div class="container">
+  <h2>Your reservations:</h2>
+  <div
+    class="reservationContainer"
+    *ngFor="let date of reservationDates; let i = index"
+  >
+    <span>{{ date }}</span>
+    <button mat-icon-button color="primary" (click)="onDeleteButton(i)">
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
+</div>
