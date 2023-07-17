@@ -12,7 +12,7 @@
       extended
       color="primary"
       (click)="decreeseAvailableParking()"
-      [disabled]="this.availableParkingSpaces == 10"
+      [disabled]="availableParkingSpaces == 0"
     >
       I PARKED
     </button>
@@ -22,7 +22,7 @@
       extended
       color="primary"
       (click)="increeseAvailableParking()"
-      [disabled]="this.availableParkingSpaces == 0"
+      [disabled]="availableParkingSpaces == 10"
     >
       I LEFT
     </button>

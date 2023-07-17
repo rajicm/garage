@@ -2,7 +2,6 @@ import * as moment from "moment";
 
 export const TODAY = moment(new Date()).format('DD-MM-YYYY');
 export  const AVAILABLE_PARKING = 'availableParkingSpaces';
-export  const RESERVED_PARKING = 'reservedParkingSpaces';
 export  const RESERVATIONS = 'reservations';
 export  const USER_ID = 'userId';
 

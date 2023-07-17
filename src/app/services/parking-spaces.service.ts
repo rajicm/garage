@@ -2,13 +2,15 @@ import { Injectable } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { UserService } from './user.service';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { AVAILABLE_PARKING, RESERVATIONS, RESERVED_PARKING, TODAY, USER_ID } from 'src/consts';
+import {
+  AVAILABLE_PARKING,
+  RESERVATIONS,
+  TODAY,
+  USER_ID,
+} from 'src/consts';
 
 @Injectable()
 export default class ParkingSpacesService {
-  private availableParkingSpacesSubject = new BehaviorSubject<number>(null!);
-  availableParkingSpaces$ = this.availableParkingSpacesSubject.asObservable();
-
   private reservationsTodaySubject = new BehaviorSubject<number>(0);
   reservationsToday$ = this.reservationsTodaySubject.asObservable();
 
@@ -21,6 +23,7 @@ export default class ParkingSpacesService {
   private reservationCountSubject = new BehaviorSubject<number>(0);
   reservationCoun$ = this.reservationCountSubject.asObservable();
 
+  reservations: string[] = [];
   userId: string = this.userService.getUserLoggedIn().uid;
 
   constructor(
@@ -28,13 +31,7 @@ export default class ParkingSpacesService {
     private readonly userService: UserService
   ) {
     this.setParkedUser();
-    // this.getAvailableParkingSpaces();
     this.checkReservationsForToday();
-    // this.deleteOldReservations()
-    // this.checkIfUserIsParked(this.userId, TODAY)
-    // this.dataBase.list('reservations').remove();
-    // this.dataBase.object(AVAILABLE_PARKING).remove()
-    // this.dataBase.list(PARKED_USERS).remove();
   }
 
   ngOnInit() {}
@@ -46,28 +43,6 @@ export default class ParkingSpacesService {
 
   areDatesEqual(date1: string, date2: string): boolean {
     return date1.valueOf() == date2.valueOf();
-  }
-
-  dateIsOlder(date1: string, date2: string): boolean {
-    return date1.valueOf() < date2.valueOf();
-  }
-
-  getAvailableParkingSpaces() {
-    this.getRecord(AVAILABLE_PARKING).subscribe(
-      (availableParkingSpacesData: any) => {
-        console.log(
-          'number ',
-          Number(availableParkingSpacesData[RESERVED_PARKING])
-        );
-        this.availableParkingSpacesSubject.next(
-          Number(availableParkingSpacesData[AVAILABLE_PARKING])
-        );
-        console.log(
-          'subject ',
-          this.getSubjectValue(this.reservationsTodaySubject)
-        );
-      }
-    );
   }
 
   setParkedUser() {
@@ -117,24 +92,42 @@ export default class ParkingSpacesService {
   }
 
   reservation(date: string, message: string) {
-    // this.saveReservation(RESERVATIONS, date, this.userId, message);
+    this.saveReservation(RESERVATIONS, date, this.userId, message);
   }
 
-  deleteRecordByUSer(dbName: string, date: string) {
-    console.log('delete user');
-    // this.dataBase.database.ref(RESERVATIONS+'/'+`${TODAY}`+'/'+user).remove().then(() => {
-    //   alert('Deleted')
-    // })
+  getReservationKeys(date: string) {
+    this.reservations = [];
+    this.getKeys(RESERVATIONS + `/${date}`).subscribe((data) => {
+      data.forEach((d: any) => {
+        this.reservations.push(d.key);
+      });
+    });
   }
 
-  deleteRecordByDate(dbName: string, date: string) {
-    this.dataBase.object(dbName + '/' + [date]).remove();
+  findAndDeleteRecord(date: string) {
+    this.getReservationKeys(date);
+    this.getRecords(RESERVATIONS, date).subscribe((reservations) => {
+      let counter = 0;
+      reservations.forEach((reservation: any) => {
+        if (reservation[USER_ID] === this.userId) {
+          this.deleteRecord(RESERVATIONS, date, this.reservations[counter]);
+          return;
+        }
+        counter++;
+      });
+    });
+  }
+
+  deleteRecord(dbName: string, date: string, key?: string) {
+    this.dataBase
+      .list(dbName + '/' + [date])
+      .remove(key)
+      .catch(() => alert('An error occured. Please try again.'));
   }
 
   decreeseAvailableParking(): number {
     this.parkedUserSubject.next(true);
     this.reservation(TODAY, 'parked');
-
     return this.updateParkingAvailability(
       this.getSubjectValue(this.reservationsTodaySubject) + 1
     );
@@ -142,17 +135,16 @@ export default class ParkingSpacesService {
 
   increeseAvailableParking(): number {
     this.parkedUserSubject.next(false);
-    this.deleteRecordByUSer(RESERVATIONS, TODAY);
+    this.findAndDeleteRecord(TODAY);
     return this.updateParkingAvailability(
       this.getSubjectValue(this.reservationsTodaySubject) - 1
     );
   }
 
-  updateParkingAvailability(available: number): number {
-    // this.availableParkingSpacesSubject.next(available);
-    this.reservationsTodaySubject.next(available);
-    this.updatedRecord(AVAILABLE_PARKING, 'reservedParkingSpaces', available);
-    return available;
+  updateParkingAvailability(reserved: number): number {
+    this.reservationsTodaySubject.next(reserved);
+    this.updatedRecord(AVAILABLE_PARKING, 'reservedParkingSpaces', reserved);
+    return reserved;
   }
 
   checkReservationsForToday() {
@@ -160,9 +152,6 @@ export default class ParkingSpacesService {
   }
 
   reserveParkingSpace(date: string) {
-    console.log('parked sub value ', this.parkedUserSubject.value);
-    this.userReservedSubject.next(false);
-    this.reservationCountSubject.next(0);
     if (this.areDatesEqual(TODAY, date)) {
       if (
         this.getSubjectValue(this.reservationsTodaySubject) < 10 &&
@@ -175,6 +164,11 @@ export default class ParkingSpacesService {
         );
       }
     } else {
+      this.checkAvailability(date);
+      console.log(
+        'reservationCountSubject value ',
+        this.getSubjectValue(this.reservationCountSubject)
+      );
       if (
         this.getSubjectValue(this.reservationCountSubject) < 10 &&
         !this.userReservedSubject.value
@@ -191,18 +185,11 @@ export default class ParkingSpacesService {
       reservations.forEach(() => {
         this.findUserInReservations(date);
       });
-      console.log('ima rez ', reservations.length);
       if (this.areDatesEqual(date, TODAY)) {
-        // this.reservationsTodaySubject.next(10-reservations.length);
         this.updateParkingAvailability(reservations.length);
-        // this.updateParkingAvailability(this.getSubjectValue(this.availableParkingSpacesSubject) - reservations.length)
       } else {
         this.reservationCountSubject.next(reservations.length);
       }
-      console.log(
-        'rez sub ',
-        this.getSubjectValue(this.reservationsTodaySubject)
-      );
     });
   }
 
@@ -223,20 +210,5 @@ export default class ParkingSpacesService {
       });
     });
     return reservationDates;
-  }
-
-  deleteOldReservations() {
-    this.getKeys(RESERVATIONS).subscribe((reservations) => {
-      reservations.forEach((reservation: any) => {
-        if (this.dateIsOlder(reservation.key, '22-06-2023')) {
-          this.deleteRecordByDate(RESERVATIONS, reservation.key);
-          this.updateParkingAvailability(
-            this.getSubjectValue(this.availableParkingSpacesSubject) + 1
-          );
-          console.log('u ifu');
-        }
-      });
-    });
-    this.setParkedUser();
   }
 }

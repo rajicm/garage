@@ -12,7 +12,7 @@ import { RESERVATIONS } from 'src/consts';
   styleUrls: ['./reservations.component.css'],
   standalone: true,
   imports: [CommonModule, MatIconModule, MatButtonModule],
-  providers: [ ParkingSpacesService ]
+  providers: [ParkingSpacesService],
 })
 export class ReservationsComponent {
   reservationDates = this.parkingService.getAllReservationDates();
@@ -20,11 +20,7 @@ export class ReservationsComponent {
   constructor(private readonly parkingService: ParkingSpacesService) {}
 
   onDeleteButton(index: number) {
-    console.log('index ', index);
-    this.parkingService.deleteRecordByUSer(
-      RESERVATIONS,
-      this.reservationDates[index]
-    );
+    this.parkingService.findAndDeleteRecord(this.reservationDates[index]);
     this.reservationDates.splice(index);
   }
 }

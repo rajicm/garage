@@ -1,27 +1,12 @@
 import { NgModule } from '@angular/core';
+import { EffectsModule } from '@ngrx/effects';
 
 @NgModule({
   declarations: [
     
   ],
-  imports: [
-
-    
-
-
-    // MatMomentDateModule,
-    // AngularFireModule.initializeApp(environment.firebase),
-    // StoreModule.forRoot({}, {}),
-    // EffectsModule.forRoot([]),
-    // AngularFireDatabaseModule,
-    // AngularFirestoreModule,
-    // AngularFireStorageModule,
-    // AngularFireAuthModule,
-    
-    // provideFirebaseApp(() => initializeApp(environment.firebase)),
-    
-    
-  ],
+  imports: [ 
+  EffectsModule.forRoot([])],
   providers: [   
   ],
   bootstrap: [],

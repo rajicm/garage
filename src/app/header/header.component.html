@@ -1,13 +1,12 @@
-<mat-toolbar *ngIf="fbAuth.user | async as user">
+<mat-toolbar *ngIf="fbAuth.user | async">
   <span>Garage</span>
   <div>
     <button mat-button routerLink="/garage">Parking spaces</button>
-    <button mat-button routerLink="/reservations">
-      My reservations
-    </button>
+    <button mat-button routerLink="/reservations">My reservations</button>
   </div>
   <span class="flexExpand"></span>
-  <div>
+  <div class="user">
+    <h3>{{ userService.getUserLoggedIn()?.displayName }}</h3>
     <button id="logout" (click)="authService.logout()">LOGOUT</button>
   </div>
 </mat-toolbar>

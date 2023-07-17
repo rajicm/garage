@@ -11,6 +11,10 @@ import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import * as moment from 'moment';
 import { MY_FORMATS } from 'src/consts';
 import ParkingSpacesService from '../services/parking-spaces.service';
+import { Observable, Subscription } from 'rxjs';
+import { User } from '../interfaces/user.interface';
+import { Store, select } from '@ngrx/store';
+import { UserState } from '../store/reducers/user.reducer';
 
 @Component({
   selector: 'app-parking-spaces',
@@ -29,29 +33,39 @@ import ParkingSpacesService from '../services/parking-spaces.service';
   ],
   providers: [
     ParkingSpacesService,
-    { provide: MAT_DATE_FORMATS, useValue: MY_FORMATS }
-  ]
+    { provide: MAT_DATE_FORMATS, useValue: MY_FORMATS },
+  ],
 })
 export class ParkingSpacesComponent implements OnInit {
   availableParkingSpaces: number = null!;
+  availableSpacesSubscription!: Subscription;
   todayReservations: number = null!;
   parkedUser: boolean = false;
+  parkedUserSubscription!: Subscription;
   reservation = new FormControl();
   reservationDate: string = '';
   todaysDate = new Date();
-  broj: number = null!;
 
-  constructor(private readonly parkingService: ParkingSpacesService) {}
+  users$: Observable<User>;
+
+  constructor(
+    private readonly parkingService: ParkingSpacesService,
+    private readonly store: Store<UserState>
+  ) {
+    this.users$ = this.store.pipe(select('user'));
+  }
 
   ngOnInit() {
-    this.parkingService.reservationsToday$.subscribe((value) => {
-      this.todayReservations = value;
-      this.availableParkingSpaces = 10 - value;
-    });
-    this.parkingService.parkedUser$.subscribe((value) => {
-      this.parkedUser = value;
-      console.log('user id ', this.parkedUser);
-    });
+    this.availableSpacesSubscription =
+      this.parkingService.reservationsToday$.subscribe((value) => {
+        this.todayReservations = value;
+        this.availableParkingSpaces = 10 - value;
+      });
+    this.parkedUserSubscription = this.parkingService.parkedUser$.subscribe(
+      (value) => {
+        this.parkedUser = value;
+      }
+    );
   }
 
   decreeseAvailableParking() {
@@ -66,9 +80,13 @@ export class ParkingSpacesComponent implements OnInit {
 
   reserveParkingSpace() {
     this.reservationDate = moment(this.reservation.value).format('DD-MM-YYYY');
-    console.log(this.reservationDate);
     if (this.reservationDate != 'Invalid date') {
       this.parkingService.reserveParkingSpace(this.reservationDate);
     } else alert('Date is invalid.');
+  }
+
+  ngOnDestroy() {
+    this.availableSpacesSubscription.unsubscribe();
+    this.parkedUserSubscription.unsubscribe();
   }
 }

@@ -1,12 +1,17 @@
 <div class="container">
-  <h2>Your reservations:</h2>
-  <div
-    class="reservationContainer"
-    *ngFor="let date of reservationDates; let i = index"
-  >
-    <span>{{ date }}</span>
-    <button mat-icon-button color="primary" (click)="onDeleteButton(i)">
-      <mat-icon>delete</mat-icon>
-    </button>
+  <div *ngIf="reservationDates.length; else noReservations">
+    <h2>Your reservations:</h2>
+    <div
+      class="reservationContainer"
+      *ngFor="let date of reservationDates; let i = index"
+    >
+      <span>{{ date }}</span>
+      <button mat-icon-button color="primary" (click)="onDeleteButton(i)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
   </div>
+  <ng-template #noReservations>
+    <h2>You don't have any reservations.</h2>
+  </ng-template>
 </div>
