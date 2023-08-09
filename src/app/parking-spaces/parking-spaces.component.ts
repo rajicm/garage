@@ -39,7 +39,7 @@ import { UserState } from '../store/reducers/user.reducer';
 export class ParkingSpacesComponent implements OnInit {
   availableParkingSpaces: number = null!;
   availableSpacesSubscription!: Subscription;
-  todayReservations: number = null!;
+  totalParkingSpaces: number = 10;
   parkedUser: boolean = false;
   parkedUserSubscription!: Subscription;
   reservation = new FormControl();
@@ -58,8 +58,7 @@ export class ParkingSpacesComponent implements OnInit {
   ngOnInit() {
     this.availableSpacesSubscription =
       this.parkingService.reservationsToday$.subscribe((value) => {
-        this.todayReservations = value;
-        this.availableParkingSpaces = 10 - value;
+        this.availableParkingSpaces = this.totalParkingSpaces - value;
       });
     this.parkedUserSubscription = this.parkingService.parkedUser$.subscribe(
       (value) => {
@@ -69,12 +68,12 @@ export class ParkingSpacesComponent implements OnInit {
   }
 
   decreeseAvailableParking() {
-    this.availableParkingSpaces =
+    this.availableParkingSpaces = this.totalParkingSpaces -
       this.parkingService.decreeseAvailableParking();
   }
 
   increeseAvailableParking() {
-    this.availableParkingSpaces =
+    this.availableParkingSpaces = this.totalParkingSpaces -
       this.parkingService.increeseAvailableParking();
   }
 

@@ -1,13 +1,8 @@
 import { Injectable } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { BehaviorSubject } from 'rxjs';
 import { UserService } from './user.service';
-import { BehaviorSubject, Observable } from 'rxjs';
-import {
-  AVAILABLE_PARKING,
-  RESERVATIONS,
-  TODAY,
-  USER_ID,
-} from 'src/consts';
+import { AVAILABLE_PARKING, RESERVATIONS, TODAY, USER_ID } from 'src/consts';
 
 @Injectable()
 export default class ParkingSpacesService {
@@ -24,17 +19,18 @@ export default class ParkingSpacesService {
   reservationCoun$ = this.reservationCountSubject.asObservable();
 
   reservations: string[] = [];
-  userId: string = this.userService.getUserLoggedIn().uid;
+  userId: string;
+
+  private reservationsSubject: BehaviorSubject<any>;
 
   constructor(
     private dataBase: AngularFireDatabase,
     private readonly userService: UserService
   ) {
-    this.setParkedUser();
+    this.userId = this.userService.getUserLoggedIn().uid;
+    this.reservationsSubject = this.getRecords(RESERVATIONS);
     this.checkReservationsForToday();
   }
-
-  ngOnInit() {}
 
   getSubjectValue(subject: BehaviorSubject<number>): number {
     subject.getValue();
@@ -46,22 +42,25 @@ export default class ParkingSpacesService {
   }
 
   setParkedUser() {
-    this.getRecords(RESERVATIONS, TODAY).subscribe((reservations) => {
-      reservations.forEach((reservation: any) => {
-        if (this.userId === reservation[USER_ID]) {
-          this.parkedUserSubject.next(true);
-        }
-      });
-    });
+    this.findUserInReservations(TODAY);
   }
 
   findUserInReservations(date: string) {
-    this.getRecords(RESERVATIONS, date).subscribe((data) => {
-      data.forEach((reservation: any) => {
-        if (this.userId === reservation[USER_ID]) {
-          this.userReservedSubject.next(true);
+    this.reservationsSubject.forEach((data) => {
+      if (data[date]) {
+        for (let record in data[date]) {
+          this.reservationCountSubject.next(Object.keys(data[date]).length);
+          if (data[date][record][USER_ID] === this.userId) {
+            if (this.areDatesEqual(TODAY, date)) {
+              this.parkedUserSubject.next(true);
+            }
+            this.userReservedSubject.next(true);
+          }
         }
-      });
+        if (this.areDatesEqual(TODAY, date)) {
+          this.updateParkingAvailability(Object.keys(data[TODAY]).length);
+        }
+      }
     });
   }
 
@@ -79,42 +78,30 @@ export default class ParkingSpacesService {
     this.dataBase.object(dbName).set({ [key]: value });
   }
 
-  getRecord(dbName: string): Observable<any> {
-    return this.dataBase.object(dbName).valueChanges();
-  }
-
-  getRecords(dbName: string, date: string): Observable<any> {
-    return this.dataBase.list(dbName + '/' + [date]).valueChanges();
-  }
-
-  getKeys(dbName: string): Observable<any> {
-    return this.dataBase.list(dbName).snapshotChanges();
+  getRecords(dbName: string, date?: string): BehaviorSubject<any> {
+    const subject = new BehaviorSubject<any[]>([]);
+    this.dataBase
+      .object(dbName + '/' + [date])
+      .valueChanges()
+      .subscribe((val: any) => {
+        subject.next(val);
+      });
+    return subject;
   }
 
   reservation(date: string, message: string) {
     this.saveReservation(RESERVATIONS, date, this.userId, message);
   }
 
-  getReservationKeys(date: string) {
-    this.reservations = [];
-    this.getKeys(RESERVATIONS + `/${date}`).subscribe((data) => {
-      data.forEach((d: any) => {
-        this.reservations.push(d.key);
-      });
-    });
-  }
-
   findAndDeleteRecord(date: string) {
-    this.getReservationKeys(date);
-    this.getRecords(RESERVATIONS, date).subscribe((reservations) => {
-      let counter = 0;
-      reservations.forEach((reservation: any) => {
-        if (reservation[USER_ID] === this.userId) {
-          this.deleteRecord(RESERVATIONS, date, this.reservations[counter]);
-          return;
+    this.reservationsSubject.forEach((data) => {
+      if (data[date]) {
+        for (let record in data[date]) {
+          if (data[date][record][USER_ID] === this.userId) {
+            this.deleteRecord(RESERVATIONS, date, record);
+          }
         }
-        counter++;
-      });
+      }
     });
   }
 
@@ -152,6 +139,7 @@ export default class ParkingSpacesService {
   }
 
   reserveParkingSpace(date: string) {
+    this.userReservedSubject.next(false);
     if (this.areDatesEqual(TODAY, date)) {
       if (
         this.getSubjectValue(this.reservationsTodaySubject) < 10 &&
@@ -165,10 +153,6 @@ export default class ParkingSpacesService {
       }
     } else {
       this.checkAvailability(date);
-      console.log(
-        'reservationCountSubject value ',
-        this.getSubjectValue(this.reservationCountSubject)
-      );
       if (
         this.getSubjectValue(this.reservationCountSubject) < 10 &&
         !this.userReservedSubject.value
@@ -181,33 +165,22 @@ export default class ParkingSpacesService {
   }
 
   checkAvailability(date: string) {
-    this.getRecords(RESERVATIONS, date).subscribe((reservations) => {
-      reservations.forEach(() => {
-        this.findUserInReservations(date);
-      });
-      if (this.areDatesEqual(date, TODAY)) {
-        this.updateParkingAvailability(reservations.length);
-      } else {
-        this.reservationCountSubject.next(reservations.length);
-      }
-    });
+    this.findUserInReservations(date);
   }
 
   getAllReservationDates() {
     let reservationDates: any = [];
-    this.getKeys(RESERVATIONS).subscribe((reservations) => {
-      reservations.forEach((reservation: any) => {
-        this.getRecords(RESERVATIONS, reservation.key).subscribe((records) => {
-          records.forEach((record: any) => {
-            if (
-              record[USER_ID] === this.userId &&
-              !reservationDates.includes(reservation.key)
-            ) {
-              reservationDates.push(reservation.key);
-            }
-          });
-        });
-      });
+    this.reservationsSubject.forEach((reservations: any) => {
+      for (let date in reservations) {
+        for (let record in reservations[date]) {
+          if (
+            reservations[date][record][USER_ID] === this.userId &&
+            !reservationDates.includes(date)
+          ) {
+            reservationDates.push(date);
+          }
+        }
+      }
     });
     return reservationDates;
   }
