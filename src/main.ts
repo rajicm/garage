@@ -10,10 +10,6 @@ import { FirebaseUIModule, firebase, firebaseui } from 'firebaseui-angular';
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app-routing.module';
 import { environment } from './environments/environment';
-import { StoreModule } from '@ngrx/store';
-import { userReducer } from './app/store/reducers/user.reducer';
-import { EffectsModule } from '@ngrx/effects';
-import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 
 const firebaseUiAuthConfig: firebaseui.auth.Config = {
   signInFlow: 'popup',
@@ -37,10 +33,5 @@ bootstrapApplication(AppComponent, {
     importProvidersFrom(provideDatabase(() => getDatabase())),
     importProvidersFrom(provideAuth(() => getAuth())),
     importProvidersFrom(FirebaseUIModule.forRoot(firebaseUiAuthConfig)),
-    importProvidersFrom(StoreModule.forRoot(userReducer)), 
-    importProvidersFrom(StoreDevtoolsModule.instrument({
-      maxAge: 25,
-    })),
-    importProvidersFrom(EffectsModule.forRoot([]))
   ],
 });

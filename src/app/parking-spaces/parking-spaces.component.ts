@@ -11,10 +11,7 @@ import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import * as moment from 'moment';
 import { MY_FORMATS } from 'src/consts';
 import ParkingSpacesService from '../services/parking-spaces.service';
-import { Observable, Subscription } from 'rxjs';
-import { User } from '../interfaces/user.interface';
-import { Store, select } from '@ngrx/store';
-import { UserState } from '../store/reducers/user.reducer';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-parking-spaces',
@@ -46,14 +43,7 @@ export class ParkingSpacesComponent implements OnInit {
   reservationDate: string = '';
   todaysDate = new Date();
 
-  users$: Observable<User>;
-
-  constructor(
-    private readonly parkingService: ParkingSpacesService,
-    private readonly store: Store<UserState>
-  ) {
-    this.users$ = this.store.pipe(select('user'));
-  }
+  constructor(private readonly parkingService: ParkingSpacesService) {}
 
   ngOnInit() {
     this.availableSpacesSubscription =
@@ -68,13 +58,13 @@ export class ParkingSpacesComponent implements OnInit {
   }
 
   decreeseAvailableParking() {
-    this.availableParkingSpaces = this.totalParkingSpaces -
-      this.parkingService.decreeseAvailableParking();
+    this.availableParkingSpaces =
+      this.totalParkingSpaces - this.parkingService.decreeseAvailableParking();
   }
 
   increeseAvailableParking() {
-    this.availableParkingSpaces = this.totalParkingSpaces -
-      this.parkingService.increeseAvailableParking();
+    this.availableParkingSpaces =
+      this.totalParkingSpaces - this.parkingService.increeseAvailableParking();
   }
 
   reserveParkingSpace() {
