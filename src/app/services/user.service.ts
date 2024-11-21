@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class UserService {
   loggedUser: User = {
     uid: '',
-    displayName: '',
+    // displayName: '',
     email: '',
   };
 
@@ -21,8 +21,12 @@ export class UserService {
     localStorage.setItem('currentUser', JSON.stringify(user));
   }
 
-  getUserLoggedIn() {
+  getLoggedInUser() {
     return JSON.parse(localStorage.getItem('currentUser') || '{}');
+  }
+
+  isUserLoggedIn(): boolean {
+    return !!Object.entries(this.getLoggedInUser()).length;
   }
 
   clearUser() {
