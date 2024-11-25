@@ -41,10 +41,10 @@ export class LoginComponent {
       {
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(6)]],
-        // name: ['', Validators.required],
-        // confirmPassword: ['', Validators.required],
+        name: [''],
+        confirmPassword: [''],
       },
-      { validators: matchPasswordsValidator() }
+      { validators: !this.isLoginMode ? matchPasswordsValidator() : null }
     );
   }
 
