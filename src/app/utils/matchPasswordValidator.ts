@@ -6,11 +6,10 @@ export function matchPasswordsValidator(): ValidatorFn {
     const confirmPassword = group.get('confirmPassword')?.value;
 
     if (password !== confirmPassword) {
-      group.get('confirmPassword')?.setErrors({ passwordsMismatch: true }); // Set error on confirmPassword
-      return { passwordsMismatch: true }; // Set group-level error
+      group.get('confirmPassword')?.setErrors({ passwordsMismatch: true });
+      return { passwordsMismatch: true };
     }
 
-    // Clear errors if passwords match
     group.get('confirmPassword')?.setErrors(null);
     return null;
   };

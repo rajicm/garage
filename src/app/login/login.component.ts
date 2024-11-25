@@ -27,7 +27,7 @@ import { matchPasswordsValidator } from '../utils/matchPasswordValidator';
   styleUrls: ['./login.component.css'],
 })
 export class LoginComponent {
-  isLoginMode = true; // Toggle between login and register modes
+  isLoginMode = true;
   authForm: FormGroup;
 
   constructor(private fb: FormBuilder) {
@@ -45,10 +45,10 @@ export class LoginComponent {
   toggleMode(): void {
     this.isLoginMode = !this.isLoginMode;
     if (this.isLoginMode) {
-      this.authForm.removeControl('name');
-      this.authForm.removeControl('confirmPassword');
       this.authForm.get('name')?.clearValidators();
       this.authForm.get('confirmPassword')?.clearValidators();
+      this.authForm.removeControl('name');
+      this.authForm.removeControl('confirmPassword');
     } else {
       this.authForm.addControl('name', this.fb.control(''));
       this.authForm.addControl('confirmPassword', this.fb.control(''));

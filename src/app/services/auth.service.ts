@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
 import { User } from '../interfaces/user.interface';
 import { UserService } from './user.service';
@@ -9,7 +8,6 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export default class AuthService {
-  user: User = this.userService.getLoggedInUser();
   private loggedInSubject = new BehaviorSubject<boolean>(false);
   loggedIn$ = this.loggedInSubject.asObservable();
 
