@@ -27,8 +27,9 @@ export default class ParkingSpacesService {
     private dataBase: AngularFireDatabase,
     private readonly userService: UserService
   ) {
-    this.userId = this.userService.getUserLoggedIn().uid;
+    this.userId = this.userService.getLoggedInUser().uid;
     this.reservationsSubject = this.getRecords(RESERVATIONS);
+    console.log('records ', this.getSubjectValue(this.reservationsSubject));
     this.checkReservationsForToday();
   }
 
@@ -97,9 +98,17 @@ export default class ParkingSpacesService {
     this.reservationsSubject.forEach((data) => {
       if (data[date]) {
         for (let record in data[date]) {
+          let index: number = 0;
           if (data[date][record][USER_ID] === this.userId) {
+            let newReservations = this.reservationsSubject.getValue();
+            console.log('before ', newReservations);
             this.deleteRecord(RESERVATIONS, date, record);
+            console.log('after ', newReservations);
+            // delete newReservations.date.record;
+            // newReservations.splice(index, 1);
+            // this.reservationsSubject.next(newReservations);
           }
+          index++;
         }
       }
     });
@@ -109,12 +118,16 @@ export default class ParkingSpacesService {
     this.dataBase
       .list(dbName + '/' + [date])
       .remove(key)
+      .then(() => {
+        console.log('Deleted');
+      })
       .catch(() => alert('An error occured. Please try again.'));
   }
 
   decreeseAvailableParking(): number {
     this.parkedUserSubject.next(true);
     this.reservation(TODAY, 'parked');
+    this.getRecords(RESERVATIONS, TODAY);
     return this.updateParkingAvailability(
       this.getSubjectValue(this.reservationsTodaySubject) + 1
     );
@@ -123,6 +136,7 @@ export default class ParkingSpacesService {
   increeseAvailableParking(): number {
     this.parkedUserSubject.next(false);
     this.findAndDeleteRecord(TODAY);
+    this.getRecords(RESERVATIONS, TODAY);
     return this.updateParkingAvailability(
       this.getSubjectValue(this.reservationsTodaySubject) - 1
     );
