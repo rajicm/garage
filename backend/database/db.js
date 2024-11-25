@@ -10,18 +10,18 @@ const db = new sqlite3.Database('database.db', (err) => {
 
 // Initialize tables if they don't exist
 db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS users (
+  db.run(`CREATE TABLE IF NOT EXISTS Users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE
   )`);
 
-  db.run(`CREATE TABLE IF NOT EXISTS parking (
+  db.run(`CREATE TABLE IF NOT EXISTS Parking (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicle_number TEXT NOT NULL,
-    parking_spot TEXT NOT NULL,
-    entry_time TEXT NOT NULL,
-    exit_time TEXT
+    userId INTEGER NOT NULL,
+    date TEXT NOT NULL,
+    FOREIGN KEY (userId) REFERENCES Users(id)
   )`);
 });
 
