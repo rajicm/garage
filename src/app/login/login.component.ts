@@ -11,6 +11,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from '@angular/common';
 import { matchPasswordsValidator } from '../utils/matchPasswordValidator';
+import { HttpClientModule } from '@angular/common/http';
+import AuthService from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -23,6 +25,7 @@ import { matchPasswordsValidator } from '../utils/matchPasswordValidator';
     MatButtonModule,
     MatCardModule,
     ReactiveFormsModule,
+    HttpClientModule,
   ],
   styleUrls: ['./login.component.css'],
 })
@@ -30,15 +33,18 @@ export class LoginComponent {
   isLoginMode = true;
   authForm: FormGroup;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private readonly authService: AuthService
+  ) {
     this.authForm = this.fb.group(
       {
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(6)]],
-        name: ['', Validators.required],
-        confirmPassword: ['', Validators.required],
+        name: [''],
+        confirmPassword: [''],
       },
-      { validators: matchPasswordsValidator() }
+      { validators: !this.isLoginMode ? matchPasswordsValidator() : null }
     );
   }
 
@@ -64,13 +70,15 @@ export class LoginComponent {
       return;
     }
 
-    const { email, password } = this.authForm.value;
+    const { email, password, username } = this.authForm.value;
 
     if (this.isLoginMode) {
       console.log('Logging in:', email, password);
+      this.authService.login({ username, password });
       // Perform login logic
     } else {
       console.log('Registering:', email, password);
+      this.authService.register({ username, password, email });
       // Perform registration logic
     }
   }
