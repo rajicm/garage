@@ -6,29 +6,7 @@ router.get('/', (req, res) => {
   res.send('Users route is working');
 });
 
-// router.post('/register', (req, res) => {
-//    console.log('Received POST request at /register');
-//     console.log('Request body:', req.body);
-
-//   const { password, email, username } = req.body;
-//   try {
-//     // const hashedPassword = await bcrypt.hash(password, 10);
-//     const query = `INSERT INTO Users (password, email, username) VALUES (?, ?, ?)`;
-//     db.run(query, [password, email, username], function (err) {
-//       if (err) {
-//         res.status(500).json({ error: err.message });
-//       } else {
-//         res.status(201).json({ id: this.lastID });
-//       }
-//     });
-//   } catch (err) {
-//     res.status(500).send('Error registering user: ' + err.message);
-//   }
-// });
-
 router.post('/register', (req, res) => {
-  console.log('Received data:', req.body); // Log the data to see if it's coming in
-
   const { username, password, email } = req.body;
 
    if (!username || !password || !email) {
