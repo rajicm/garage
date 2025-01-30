@@ -1,35 +1,34 @@
+import { BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { User } from '../interfaces/user.interface';
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
-  loggedUser: User = {
-    uid: '',
-    // displayName: '',
-    email: '',
-  };
+  private readonly currentUserSubject = new BehaviorSubject<User | null>(null);
+  currentUser$ = this.currentUserSubject.asObservable();
 
-  users$!: Observable<User>;
+  constructor() {
+    const storedUser = this.getLoggedInUser();
+    if (storedUser) this.currentUserSubject.next(storedUser);
+  }
 
-  ngOnInit() {}
-
-  setUserLoggedIn(user: User) {
-    this.loggedUser = user;
+  setUserLoggedIn(user: User): void {
+    this.currentUserSubject.next(user);
     localStorage.setItem('currentUser', JSON.stringify(user));
   }
 
-  getLoggedInUser() {
-    return JSON.parse(localStorage.getItem('currentUser') || '{}');
+  getLoggedInUser(): User | null {
+    return JSON.parse(localStorage.getItem('currentUser') || 'null');
   }
 
   isUserLoggedIn(): boolean {
-    return !!Object.entries(this.getLoggedInUser()).length;
+    return !!this.getLoggedInUser();
   }
 
-  clearUser() {
+  clearUser(): void {
     localStorage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
   }
 }

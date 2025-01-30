@@ -34,10 +34,10 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Name</mat-label>
-        <input matInput formControlName="name" type="text" />
-        <mat-error *ngIf="authForm.get('name')?.invalid"
-          >Name is required</mat-error
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username" type="text" />
+        <mat-error *ngIf="authForm.get('username')?.invalid"
+          >Username is required</mat-error
         >
       </mat-form-field>
     </div>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -13,6 +13,8 @@ import { CommonModule } from '@angular/common';
 import { matchPasswordsValidator } from '../utils/matchPasswordValidator';
 import { HttpClientModule } from '@angular/common/http';
 import AuthService from '../services/auth.service';
+import { Router } from '@angular/router';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-login',
@@ -29,36 +31,44 @@ import AuthService from '../services/auth.service';
   ],
   styleUrls: ['./login.component.css'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   isLoginMode = true;
   authForm: FormGroup;
 
   constructor(
     private fb: FormBuilder,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    public readonly userService: UserService
   ) {
     this.authForm = this.fb.group(
       {
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(6)]],
-        name: [''],
+        username: [''],
         confirmPassword: [''],
       },
       { validators: !this.isLoginMode ? matchPasswordsValidator() : null }
     );
   }
 
+  ngOnInit() {
+    if (this.userService.isUserLoggedIn()) {
+      this.router.navigate(['']);
+    }
+  }
+
   toggleMode(): void {
     this.isLoginMode = !this.isLoginMode;
     if (this.isLoginMode) {
-      this.authForm.get('name')?.clearValidators();
+      this.authForm.get('username')?.clearValidators();
       this.authForm.get('confirmPassword')?.clearValidators();
-      this.authForm.removeControl('name');
+      this.authForm.removeControl('nusernameame');
       this.authForm.removeControl('confirmPassword');
     } else {
-      this.authForm.addControl('name', this.fb.control(''));
+      this.authForm.addControl('username', this.fb.control(''));
       this.authForm.addControl('confirmPassword', this.fb.control(''));
-      this.authForm.get('name')?.setValidators([Validators.required]);
+      this.authForm.get('username')?.setValidators([Validators.required]);
       this.authForm
         .get('confirmPassword')
         ?.setValidators([Validators.required]);
@@ -73,13 +83,20 @@ export class LoginComponent {
     const { email, password, username } = this.authForm.value;
 
     if (this.isLoginMode) {
-      console.log('Logging in:', email, password);
-      this.authService.login({ username, password });
-      // Perform login logic
+      console.log('Logging in:', email, password, email);
+      this.authService.login({ password, email }).subscribe((response) => {
+        console.log('Response from logging the user ', response.user);
+        this.userService.setUserLoggedIn(response.user);
+        this.router.navigate(['']);
+      });
     } else {
-      console.log('Registering:', email, password);
-      this.authService.register({ username, password, email });
-      // Perform registration logic
+      console.log('Registering:', email, password, username);
+      this.authService
+        .register({ username, password, email })
+        .subscribe((response) => {
+          console.log('Response from registering the user ', response);
+          this.router.navigate(['']);
+        });
     }
   }
 }

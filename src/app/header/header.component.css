@@ -4,17 +4,14 @@ span {
 .flexExpand {
   flex: 1 1 auto;
 }
-
 .user {
   display: flex;
   align-items: center;
 }
-
 h3 {
-  margin-right: 15px;
-  margin-top: 15px;
+  margin: 0 15px 0 0;
 }
-
 .header-title {
   color: #673ab7;
+  font-weight: bold;
 }

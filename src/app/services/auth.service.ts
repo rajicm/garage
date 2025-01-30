@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { UserService } from './user.service';
-import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { UserService } from './user.service';
 
+const APIURL = 'http://localhost:3000/users';
 @Injectable({
   providedIn: 'root',
 })
 export default class AuthService {
   private loggedInSubject = new BehaviorSubject<boolean>(false);
   loggedIn$ = this.loggedInSubject.asObservable();
-  private apiUrl = 'http://localhost:3000';
 
   constructor(
     private readonly userService: UserService,
@@ -26,35 +26,18 @@ export default class AuthService {
     password: string;
     email: string;
   }): Observable<any> {
-    console.log('You are authenticated');
-    return this.http.post(`${this.apiUrl}/register`, userData);
+    return this.http.post(`${APIURL}/register`, userData);
   }
 
-  login(credentials: { username: string; password: string }): Observable<any> {
+  login(credentials: { password: string; email: string }): Observable<any> {
     console.log('You are authenticated');
-    return this.http.post(`${this.apiUrl}/login`, credentials);
+    return this.http.post(`${APIURL}/login`, credentials);
   }
-
-  // login(email: string, password: string) {
-  //   this.loggedInSubject.next(true);
-  //   this.userService.setUserLoggedIn({ uid: 'Maja', email: email });
-  //   this.router.navigate(['/garage']);
-  //   console.log('You are authenticated');
-  //   return this.http.post(`${this.apiUrl}/login`, { email, password });
-  // }
-
-  // register(username: string, password: string, email: string) {
-  //   return this.http.post(`${this.apiUrl}/register`, {
-  //     username,
-  //     password,
-  //     email,
-  //   });
-  // }
 
   logout() {
     this.loggedInSubject.next(false);
-    this.router.navigate(['']);
     this.userService.clearUser();
+    this.router.navigate(['/login']);
     console.log('You are logged out');
   }
 

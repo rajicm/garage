@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ParkingSpacesComponent } from './parking-spaces/parking-spaces.component';
-import { AuthGuard } from './guards/auth.guard';
+import { authGuard } from './guards/auth.guard';
 import { LoginComponent } from './login/login.component';
 
 export const routes: Routes = [
@@ -17,7 +17,7 @@ export const routes: Routes = [
   {
     path: 'garage',
     component: ParkingSpacesComponent,
-    canActivate: [AuthGuard],
+    canMatch: [authGuard],
   },
   {
     path: 'reservations',
