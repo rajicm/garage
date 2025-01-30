@@ -15,14 +15,17 @@ db.serialize(() => {
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE
-  )`);
+  )`, (err) => {
+    if (err) console.error('Error creating users table:', err.message);
+});
 
   db.run(`CREATE TABLE IF NOT EXISTS Parking (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     userId INTEGER NOT NULL,
     date TEXT NOT NULL,
     FOREIGN KEY (userId) REFERENCES Users(id)
-  )`);
+  )`,(err) => {
+    if (err) console.error('Error creating parking table:', err.message);
 });
-
-module.exports = db;
+});
+module.exports = db; 
